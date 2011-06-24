@@ -354,13 +354,16 @@ Ext.reg('dtCenteredButtonField', dtLib.fields.CenteredButtonField);
 
 dtLib.plugins.ListPagingPlugin = Ext.extend(Ext.util.Observable, {
     prevRecordCount: -1,
+    enabled: true,
     sortField: 'id',
     autoPaging: false,
     loadMoreText: 'Load More...',
+    disableOnEmptyStore: true,
     init: function(list) {
         this.prevRecordCount = -1;  // reset value on init
+        this.enabled = true;
         this.list = list;
-        
+
         list.onBeforeLoad = Ext.util.Functions.createInterceptor(list.onBeforeLoad, this.onBeforeLoad, this);
         this.mon(this.list, 'update', this.onListUpdate, this);
     },
@@ -371,7 +374,7 @@ dtLib.plugins.ListPagingPlugin = Ext.extend(Ext.util.Observable, {
 
         if (!this.rendered)
             this.render();
-        
+
         this.el.appendTo(this.list.getTargetEl());
 
         if (this.autoPaging) {
@@ -381,10 +384,12 @@ dtLib.plugins.ListPagingPlugin = Ext.extend(Ext.util.Observable, {
             this.mon(this.el, 'tap', this.onPagingTap, this);
         }
 
-        if (this.el) {
-            if (totalRecords == store.data.length // loaded all data
-                || this.prevRecordCount == store.data.length)  // no new data
-                this.el.hide();
+        if (this.disableOnEmptyStore && store.data.length == 0  // no data in the store
+            || totalRecords == store.data.length // loaded all data
+            || this.prevRecordCount == store.data.length) {  // no new data
+
+            this.enabled = false;
+            this.el.hide();
         } else {
             this.el.removeCls('x-loading');
             this.el.show();
@@ -402,7 +407,7 @@ dtLib.plugins.ListPagingPlugin = Ext.extend(Ext.util.Observable, {
         }
 
         this.el = targetEl.createChild({
-            cls: 'x-list-paging' + (this.autoPaging ? ' x-loading' : ''),
+            cls: 'x-list-paging',
             html: html + Ext.LoadingSpinner
         });
 
@@ -417,7 +422,7 @@ dtLib.plugins.ListPagingPlugin = Ext.extend(Ext.util.Observable, {
 
         // set lastitem parameter
         Ext.apply(store.proxy.extraParams, {
-            lastitem: (lastItem) ? lastItem.get(this.sortField) : '',
+            lastitemid: (lastItem) ? lastItem.get(this.sortField) : '',
             itemcount: this.list.store.data.length,
             direction: 0
         });
@@ -428,88 +433,17 @@ dtLib.plugins.ListPagingPlugin = Ext.extend(Ext.util.Observable, {
         }
     },
     onPagingTap : function(e) {
-        if (!this.loading) {
+        if (this.enabled && !this.loading) {
             this.loading = true;
-            this.list.store.nextPage();
             this.el.addCls('x-loading');
+            this.list.store.nextPage();
         }
     },
     onScrollEnd : function(scroller, pos) {
-        if (pos.y >= Math.abs(scroller.offsetBoundary.top)) {
+        if (this.enabled && pos.y >= Math.abs(scroller.offsetBoundary.top)) {
             this.loading = true;
-            this.list.store.nextPage();
             this.el.addCls('x-loading');
+            this.list.store.nextPage();
         }
     }
 });
-
-
-
-
-
-// ************************************************
-
-dtLib.util.ago = function(date, baseDate, granularity) {
-    if(granularity == undefined) granularity = 1;
-    if(baseDate == undefined) baseDate = new Date().getTime();
-
-    var periods = [],
-        output = '',
-        difference = Math.abs(date - baseDate),
-        time, ext, value;
-
-    periods['yr'] = 31536000;
-    periods['mt'] = 2592000;
-    periods['wk'] = 604800;
-    periods['dy'] = 86400;
-    periods['hr'] = 3600;
-    periods['mn'] = 60;
-    periods['se'] = 1;
-
-    for (var period in periods) {
-        value = periods[period];
-
-        if(difference >= value) {
-            time = Math.floor(difference / value);
-            difference %= value;
-
-            //ext = (time > 1) ? 's ' : ' ';
-            output = output + time + ' ' + period; // + ext;
-
-            if(granularity-- == 1) break;
-        }
-    }
-
-    return output;// + ' ago';
-}
-
-
-dtLib.util.formatCount = function(count) {
-    // TODO do & move to lib
-    return count;
-}
-
-dtLib.util.rateClass = function (rating) {
-   if (rating > 8)
-       return 'rateUH';
-   else if (rating > 5)
-       return 'rateVH';
-   else if (rating > 2)
-       return 'rateH';
-   else if (rating > 0)
-       return 'rateM';
-   else if (rating > -3)
-       return 'rateL';
-   else if (rating > -7)
-       return 'rateVL';
-   else
-       return 'rateUL';
-}
-
-dtLib.util.formatRating = function (rating) {
-    return (rating > 0) ? '+' + rating : rating;
-}
-
-
-
-
