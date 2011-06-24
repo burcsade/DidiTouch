@@ -1,0 +1,39 @@
+.x-form-field-container.dt-buttonField-pressed, .x-form-field-container.dt-buttonField-active {
+  color: #fff;
+  background-color: #bababa;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a1a1a1), color-stop(10%, #adadad), color-stop(65%, #bababa), color-stop(100%, #bbbbbb));
+  background-image: linear-gradient(#a1a1a1, #adadad 10%, #bababa 65%, #bbbbbb);
+}
+
+.x-subfield {
+  overflow: hidden;
+  position: relative;
+  min-height: 2.5em;
+  border-bottom: 1px solid #dddddd;
+  display: -webkit-box;
+  display: box !important;
+}
+.x-subfield input, .x-subfield textarea, .x-subfield select, .x-subfield .x-field-slider {
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  padding: .4em;
+  border: 0;
+}
+
+.x-field-textarea .x-form-field-container .x-full-height {
+    height: 500px !important;
+}
+
+.x-input-image {
+    padding: 0px;
+}
+
+.x-form-field-image .pressed {
+    opacity:0.5;
+}
+
+.x-field .x-field-recipient {
+    background-color:white;
+    line-height:45px;
+    padding:0px 5px;
+}
